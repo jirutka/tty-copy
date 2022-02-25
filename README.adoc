@@ -1,0 +1,122 @@
+= tty-copy
+:proj-name: tty-copy
+:version: 0.0.0
+:gh-name: jirutka/{proj-name}
+:releases-uri: https://github.com/{gh-name}/releases/download/v{version}
+
+ifdef::env-github[]
+image:https://github.com/{gh-name}/workflows/CI/badge.svg[Binaries Workflow, link=https://github.com/{gh-name}/actions?query=workflow%3A%22CI%22]
+endif::env-github[]
+
+An utility for copying content to the system clipboard from *anywhere* via a TTY and terminal using the https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h3-Operating-System-Commands[ANSI OSC52] sequence.
+It works in any terminal session, whether local, remote (e.g. SSH), or even nested therein!
+
+Refer to link:tty-copy.1.adoc[tty-copy(1)] for usage information.
+
+
+== Supported Terminals
+
+Here is a non-exhaustive list of the status of popular terminal emulators regarding OSC52 (as of May 2021)footnote:[This list was copied from https://github.com/ojroques/vim-oscyank[vim-oscyank].]:
+
+|===
+| Terminal | OSC 52 support
+
+| https://github.com/alacritty/alacritty[Alacritty]
+| *yes*
+
+| https://github.com/GNOME/gnome-terminal[GNOME Terminal] (and other VTE-based terminals)
+| https://bugzilla.gnome.org/show_bug.cgi?id=795774[not yet]
+
+| https://iterm2.com/[iTerm2]
+| *yes*
+
+| https://github.com/kovidgoyal/kitty[kitty]
+| *yes*
+
+| http://rxvt.sourceforge.net/[rxvt]
+| *yes* (to be confirmed)
+
+| https://www.gnu.org/software/screen/[screen]
+| *yes*
+
+| https://en.wikipedia.org/wiki/Terminal_(macOS)[Terminal.app]
+| no, but see https://github.com/matvore/pb52[workaround]
+
+| https://github.com/tmux/tmux[tmux]
+| *yes*
+
+| http://software.schmorp.de/pkg/rxvt-unicode.html[urxvt]
+| *yes* (with a script, see https://github.com/ojroques/vim-oscyank/issues/4[here])
+
+| https://github.com/microsoft/terminal[Windows Terminal]
+| *yes*
+|===
+
+
+== Requirements
+
+.*Runtime*:
+* UNIX-like system
+
+.*Build*:
+* C compiler and linker supporting at least C99 (tested with clang and gcc)
+* https://www.gnu.org/software/make/[GNU Make]
+* http://asciidoctor.org/[Asciidoctor] (for building man pages)
+
+
+== Installation
+
+=== On Alpine Linux
+
+Install package {proj-name} from the Alpine’s Edge community repository:
+
+[source, sh, subs="+attributes"]
+apk add {proj-name}
+
+
+=== Using Pre-Built Binary
+
+{releases-uri}/{proj-name}-{version}-x86_64-unknown-linux.tar.gz[[x86_64]]
+{releases-uri}/{proj-name}-{version}-aarch64-unknown-linux.tar.gz[[aarch64]]
+{releases-uri}/{proj-name}-{version}-armv7-unknown-linux.tar.gz[[armv7]]
+{releases-uri}/{proj-name}-{version}-ppc64le-unknown-linux.tar.gz[[ppc64le]]
+{releases-uri}/{proj-name}-{version}-riscv64-unknown-linux.tar.gz[[riscv64]]
+
+. Download and extract release tarball for your CPU architecture (pick the right link from the list above):
++
+[source, sh, subs="verbatim, attributes"]
+----
+wget {releases-uri}/{proj-name}-{version}-x86_64-unknown-linux.tar.gz
+tar -xzf {proj-name}-{version}-*.tar.gz
+----
+
+. Install `{proj-name}` somewhere on your `PATH`, e.g. `/usr/local/bin`:
++
+[source, sh, subs="verbatim, attributes"]
+install -m 755 {proj-name}-{version}-*/{proj-name} /usr/local/bin/
+
+All binaries are statically linked with http://www.musl-libc.org/[musl libc], so they work on every Linux system (distro) regardless of used libc.
+
+
+=== From Source Tarball
+
+[source, sh, subs="+attributes"]
+----
+wget https://github.com/{gh-name}/archive/v{version}/{proj-name}-{version}.tar.gz
+tar -xzf {proj-name}-{version}.tar.gz
+cd {proj-name}-{version}
+
+make build
+make install DESTDIR=/ prefix=/usr/local
+----
+
+
+== Credits
+
+This program is inspired from https://github.com/yetamrra/termcopy[termcopy] and https://github.com/ojroques/vim-oscyank[vim-oscyank].
+
+
+== License
+
+This project is licensed under http://opensource.org/licenses/MIT/[MIT License].
+For the full text of the license, see the link:LICENSE[LICENSE] file.

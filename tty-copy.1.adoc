@@ -1,0 +1,73 @@
+= tty-copy(1)
+:doctype: manpage
+:repo-uri: https://github.com/jirutka/tty-copy
+:issues-uri: {repo-uri}/issues
+
+== NAME
+
+tty-copy - copy content to the system clipboard via TTY
+
+
+== SYNOPSIS
+
+*tty-copy* [options] [<__text...__>]
+
+
+== DESCRIPTION
+
+*tty-copy* copies the given _text_ to the controlling TTY using OSC 52 escape sequence and base64 encoding.
+If no _text_ is given, *tty-copy* copies data from its standard input.
+
+This allows terminals that support OSC 52 to copy the data into the system clipboard.
+It works in any terminal session, whether local, remote, or even nested therein!
+The supporting terminal must obviously (a) support OSC 52 and (b) have permission to access the clipboard.
+
+The maximum length of an OSC 52 escape sequence is originally 100 000 bytes in total which means 74 994 bytes of plain text.
+However, some terminal emulators have higher limit; for example, kitty allows up to 8 MiB by default.
+
+For the specification see the section Operating System Controls, code 52, Manipulate Selection Data, in Xterm Control Sequences (https://www.xfree86.org/current/ctlseqs.html).
+
+
+== OPTIONS
+
+*-c*, *--clear*::
+Instead of copying anything, clear the clipboard so that nothing is copied.
+
+*-n*, *--trim-newline*::
+Do not copy the trailing newline character.
+
+*-o* <__file__>, *--output* <__file__>::
+Write the OSC sequence to __file__ instead of `/dev/tty`.
+
+*-p*, *--primary*::
+Use the "`primary`" clipboard (selection) instead of the regular clipboard.
+
+*-T* <__type__>, *--term* <__type__>::
+Specify the _type_ of the terminal.
+Currently, only `"screen"` and `"tmux"` are recognized, any other value is interpreted as the default.
++
+If not specified, `"screen"` and `"tmux"` are autodetected based on the `TERM` and `TMUX` environment variables.
+
+*-V*, *--version*::
+Display the version of *tty-copy* and exit.
+
+*-h*, *--help*::
+Display the help message and exit.
+
+
+== EXIT CODES
+
+* *0* -- Clean exit, no error has encountered.
+* *1* -- General error.
+* *10* -- Invalid usage.
+* *11* -- I/O error.
+
+
+== AUTHORS
+
+Jakub Jirutka
+
+
+== REPORTING BUGS
+
+Report bugs to the project`'s issue tracker at {issues-uri}.

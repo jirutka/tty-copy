@@ -1,0 +1,110 @@
+name: CI
+on:
+  - push
+  - pull_request
+
+jobs:
+  build-ubuntu:
+    name: Build on Ubuntu x86_64 with ${{ matrix.CC }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        CC:
+          - gcc
+          - clang
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v1
+
+      - name: Install build dependencies
+        run: sudo apt-get install asciidoctor
+
+      - run: make build CC=${{ matrix.CC }}
+
+      - run: ./build/tty-copy -V
+
+      - run: make install DESTDIR=dest
+
+  build-alpine:
+    name: Build on Alpine ${{ matrix.ARCH }} with ${{ matrix.CC }} ${{ matrix.LDFLAGS }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ARCH:
+          - x86_64
+          - aarch64
+          - armv7
+          - ppc64le
+          - riscv64
+        CC:
+          - gcc
+        LDFLAGS:
+          - ''
+          - -static -s
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 0  # fetch all history
+
+      - name: Download alpine-chroot-install
+        run: |
+          wget https://raw.githubusercontent.com/alpinelinux/alpine-chroot-install/v0.13.2/alpine-chroot-install
+          echo '60c7e0b5d82e21d1a549fc9a46ba3b36688c09dc  alpine-chroot-install' | sha1sum -c
+          chmod +x alpine-chroot-install
+
+      - name: Install latest Alpine Linux for ${{ matrix.ARCH }}
+        run: |
+          sudo ./alpine-chroot-install \
+            -a ${{ matrix.ARCH }} \
+            -b ${{ matrix.ARCH == 'riscv64' && 'edge' || 'latest-stable' }} \
+            -p 'asciidoctor build-base'
+          /alpine/enter-chroot uname -a
+
+      - name: Get version
+        run: |
+          GIT_TAG=$(git describe --tags --match 'v*' 2>/dev/null || echo ${GITHUB_REF##*/})
+          echo "VERSION=${GIT_TAG#v}" >> $GITHUB_ENV
+
+      - name: Build tty-copy
+        run: |
+          /alpine/enter-chroot -u $USER \
+              make build CC=${{ matrix.CC }} LDFLAGS="${{ matrix.LDFLAGS }}" VERSION="${{ env.VERSION }}"
+          ls -lah build/
+          file build/tty-copy
+
+      - name: tty-copy -V
+        run: /alpine/enter-chroot -u $USER ./build/tty-copy -V
+
+      - name: Create tarball
+        if: ${{ matrix.LDFLAGS != '' }}
+        run: |
+          TARBALL_NAME=tty-copy-${{ env.VERSION }}-${{ matrix.ARCH }}-unknown-linux
+          cp LICENSE build/
+          mv build $TARBALL_NAME
+          tar -czf $TARBALL_NAME.tar.gz $TARBALL_NAME
+          shasum -a 256 $TARBALL_NAME.tar.gz > $TARBALL_NAME.tar.gz.sha256
+
+      - name: Upload tarball to artifacts
+        if: ${{ matrix.LDFLAGS != '' }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: tarballs
+          path: '*.tar.gz*'
+
+  publish:
+    name: Publish tarballs to Releases
+    if: ${{ startsWith(github.ref, 'refs/tags/v') && github.event_name != 'pull_request' }}
+    needs:
+      - build-alpine
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Download tarballs from artifacts
+        uses: actions/download-artifact@v2
+
+      - name: Upload tarballs to Releases
+        uses: softprops/action-gh-release@v1
+        with:
+          files: tarballs/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
