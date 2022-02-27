@@ -76,24 +76,24 @@ apk add {proj-name}
 
 === Using Pre-Built Binary
 
-{releases-uri}/{proj-name}-{version}-x86_64-unknown-linux.tar.gz[[x86_64]]
-{releases-uri}/{proj-name}-{version}-aarch64-unknown-linux.tar.gz[[aarch64]]
-{releases-uri}/{proj-name}-{version}-armv7-unknown-linux.tar.gz[[armv7]]
-{releases-uri}/{proj-name}-{version}-ppc64le-unknown-linux.tar.gz[[ppc64le]]
-{releases-uri}/{proj-name}-{version}-riscv64-unknown-linux.tar.gz[[riscv64]]
+{releases-uri}/{proj-name}.x86_64-linux[[x86_64]]
+{releases-uri}/{proj-name}.aarch64-linux[[aarch64]]
+{releases-uri}/{proj-name}.armv7-linux[[armv7]]
+{releases-uri}/{proj-name}.ppc64le-linux[[ppc64le]]
+{releases-uri}/{proj-name}.riscv64-linux[[riscv64]]
 
-. Download and extract release tarball for your CPU architecture (pick the right link from the list above):
+. Download and verify {proj-name} binary for your CPU architecture (pick the right link from the list above), for example:
 +
 [source, sh, subs="verbatim, attributes"]
 ----
-wget {releases-uri}/{proj-name}-{version}-x86_64-unknown-linux.tar.gz
-tar -xzf {proj-name}-{version}-*.tar.gz
+curl -sSLO {releases-uri}/{proj-name}.x86_64-linux
+curl -sSL {releases-uri}/checksums.txt | sha256sum -c --ignore-missing
 ----
 
 . Install `{proj-name}` somewhere on your `PATH`, e.g. `/usr/local/bin`:
 +
 [source, sh, subs="verbatim, attributes"]
-install -m 755 {proj-name}-{version}-*/{proj-name} /usr/local/bin/
+install -m 755 {proj-name}.* /usr/local/bin/{proj-name}
 
 All binaries are statically linked with http://www.musl-libc.org/[musl libc], so they work on every Linux system (distro) regardless of used libc.
 

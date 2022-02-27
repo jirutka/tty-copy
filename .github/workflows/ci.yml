@@ -76,35 +76,38 @@ jobs:
       - name: tty-copy -V
         run: /alpine/enter-chroot -u $USER ./build/tty-copy -V
 
-      - name: Create tarball
+      - name: Rename binary before upload
         if: ${{ matrix.LDFLAGS != '' }}
         run: |
-          TARBALL_NAME=tty-copy-${{ env.VERSION }}-${{ matrix.ARCH }}-unknown-linux
-          cp LICENSE build/
-          mv build $TARBALL_NAME
-          tar -czf $TARBALL_NAME.tar.gz $TARBALL_NAME
-          shasum -a 256 $TARBALL_NAME.tar.gz > $TARBALL_NAME.tar.gz.sha256
+          mkdir dist
+          cp -a build/tty-copy dist/tty-copy.${{ matrix.ARCH }}-linux
 
-      - name: Upload tarball to artifacts
+      - name: Upload binary to artifacts
         if: ${{ matrix.LDFLAGS != '' }}
         uses: actions/upload-artifact@v2
         with:
-          name: tarballs
-          path: '*.tar.gz*'
+          name: binaries
+          path: dist/*
+          if-no-files-found: error
 
   publish:
-    name: Publish tarballs to Releases
+    name: Publish binaries to Releases
     if: ${{ startsWith(github.ref, 'refs/tags/v') && github.event_name != 'pull_request' }}
     needs:
       - build-alpine
     runs-on: ubuntu-20.04
     steps:
-      - name: Download tarballs from artifacts
+      - name: Download binaries from artifacts
         uses: actions/download-artifact@v2
 
-      - name: Upload tarballs to Releases
+      - name: Generate checksums.txt
+        run:
+          shasum -a 256 * > checksums.txt
+        working-directory: binaries
+
+      - name: Upload binaries to Releases
         uses: softprops/action-gh-release@v1
         with:
-          files: tarballs/*
+          files: binaries/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
