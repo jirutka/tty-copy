@@ -15,7 +15,7 @@
 #define PROGNAME "tty-copy"
 
 #ifndef VERSION
-  #define VERSION "0.0.0"
+  #define VERSION "0.1.0"
 #endif
 
 #define ERR_GENERAL 1
