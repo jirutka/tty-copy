@@ -241,6 +241,7 @@ int main (int argc, char * const *argv) {
 	int rc = EXIT_SUCCESS;
 	if (opts.clear) {
 		fprintf(out, "%s!%s", seq_start, seq_end);
+		fflush(out);
 
 	} else {
 		FILE *input = stdin;
@@ -302,18 +303,18 @@ int main (int argc, char * const *argv) {
 				fputs("\033\\", out);
 			}
 		}
+		fputs(seq_end, out);
+		fflush(out);
+
 		if (ferror(input)) {
 			logerr("/dev/stdin: read error: %s", strerror(errno));
 			rc = ERR_IO;
 		}
-		fputs(seq_end, out);
-
 		if (input_len > OSC_SAFE_LIMIT) {
 			logerr("warning: Input size (%lu kiB) exceeded %d kiB, it may be truncated by some terminals",
 				input_len / 1024, OSC_SAFE_LIMIT / 1024);
 		}
 	}
-	fflush(out);
 
 	if (ferror(out)) {
 		logerr("%s: write error: %s", opts.out_file, strerror(errno));
