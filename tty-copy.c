@@ -11,6 +11,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <termios.h>
+#include <unistd.h>
 
 #define PROGNAME "tty-copy"
 
@@ -222,6 +224,23 @@ static int fpeek (FILE *stream) {
 	return ch;
 }
 
+/**
+ * Changes the local modes of the terminal referred to by the open file descriptor `fd`.
+ *
+ * @param fd An open file descriptor associated with the terminal.
+ * @param c_lflag The flags to be ANDed to `c_lflag` field in the `struct termios` structure.
+ * @return 0 on success, -1 on error.
+ */
+static int term_change_local_modes (int fd, tcflag_t c_lflag) {
+	struct termios term;
+
+	if (tcgetattr(fd, &term) < 0) {
+		return -1;
+	}
+	term.c_lflag &= c_lflag;
+	return tcsetattr(fd, TCSANOW, &term);
+}
+
 int main (int argc, char * const *argv) {
 	parse_opts(argc, argv);
 
@@ -236,6 +255,15 @@ int main (int argc, char * const *argv) {
 	if ((out = fopen(opts.out_file, "w")) == NULL) {
 		logerr("Failed to open %s for writing: %s", opts.out_file, strerror(errno));
 		exit(ERR_IO);
+	}
+	int out_fd = fileno(out);
+
+	struct termios term_restore;
+	if (isatty(out_fd)) {
+		// Save the current terminal state so we can restore it later.
+		tcgetattr(out_fd, &term_restore);
+		// Avoid mixing input with terminal output.
+		term_change_local_modes(out_fd, ~(CREAD | ECHO | ICANON));
 	}
 
 	int rc = EXIT_SUCCESS;
@@ -257,7 +285,8 @@ int main (int argc, char * const *argv) {
 
 				if (buf_len + arg_len + 2 > sizeof(buf)) {
 					logerr("Command line is too long (limit is %lu bytes)", sizeof(buf));
-					exit(ERR_GENERAL);
+					rc = ERR_GENERAL;
+					goto done;
 				}
 				if (buf_len > 0) {
 					buf[buf_len++] = ' ';
@@ -319,6 +348,11 @@ int main (int argc, char * const *argv) {
 	if (ferror(out)) {
 		logerr("%s: write error: %s", opts.out_file, strerror(errno));
 		rc = ERR_IO;
+	}
+
+done:
+	if (isatty(out_fd)) {
+		tcsetattr(out_fd, TCSANOW, &term_restore);
 	}
 
 	return rc;
