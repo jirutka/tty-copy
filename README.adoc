@@ -24,6 +24,9 @@ Here is a non-exhaustive list of the status of popular terminal emulators regard
 | https://github.com/alacritty/alacritty[Alacritty]
 | *yes*
 
+| https://codeberg.org/dnkl/foot[foot]
+| *yes*
+
 | https://github.com/GNOME/gnome-terminal[GNOME Terminal] (and other VTE-based terminals)
 | https://bugzilla.gnome.org/show_bug.cgi?id=795774[not yet]
 
