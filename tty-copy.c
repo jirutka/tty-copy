@@ -58,7 +58,7 @@ static const char * const help_msg =
 	"  -V --version       Print program name & version and exit.\n"
 	"  -h --help          Display this message and exit.\n"
 	"\n"
-	"Homepage: https://github.com/jirutka/tty-copy\n";
+	"Please report bugs at <https://github.com/jirutka/tty-copy/issues>\n";
 
 // CLI options
 static struct {
