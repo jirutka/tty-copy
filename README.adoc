@@ -36,6 +36,9 @@ Here is a non-exhaustive list of the status of popular terminal emulators regard
 | https://github.com/kovidgoyal/kitty[kitty]
 | *yes*
 
+| https://konsole.kde.org[Konsole]
+| https://bugs.kde.org/show_bug.cgi?id=372116[not yet]
+
 | http://rxvt.sourceforge.net/[rxvt]
 | *yes* (to be confirmed)
 
