@@ -301,6 +301,8 @@ int main (int argc, char * const *argv) {
 		term_change_local_modes(tty_fd, ~(CREAD | ECHO | ICANON));
 	}
 
+	// TODO: refactor this spaghetti
+
 	int rc = EXIT_SUCCESS;
 	if (opts.op == OP_TEST) {
 		fputs("\0337", tty);  // save current terminal state
