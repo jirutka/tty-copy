@@ -251,25 +251,25 @@ int main (int argc, char * const *argv) {
 
 	const char *seq_end = opts.is_tmux ? "\a\033\\" : "\a";
 
-	FILE *out = NULL;
-	if ((out = fopen(opts.out_file, "w")) == NULL) {
+	FILE *tty = NULL;
+	if ((tty = fopen(opts.out_file, "w")) == NULL) {
 		logerr("Failed to open %s for writing: %s", opts.out_file, strerror(errno));
 		exit(ERR_IO);
 	}
-	int out_fd = fileno(out);
+	int tty_fd = fileno(tty);
 
 	struct termios term_restore;
-	if (isatty(out_fd)) {
+	if (isatty(tty_fd)) {
 		// Save the current terminal state so we can restore it later.
-		tcgetattr(out_fd, &term_restore);
+		tcgetattr(tty_fd, &term_restore);
 		// Avoid mixing input with terminal output.
-		term_change_local_modes(out_fd, ~(CREAD | ECHO | ICANON));
+		term_change_local_modes(tty_fd, ~(CREAD | ECHO | ICANON));
 	}
 
 	int rc = EXIT_SUCCESS;
 	if (opts.clear) {
-		fprintf(out, "%s!%s", seq_start, seq_end);
-		fflush(out);
+		fprintf(tty, "%s!%s", seq_start, seq_end);
+		fflush(tty);
 
 	} else {
 		FILE *input = stdin;
@@ -317,23 +317,23 @@ int main (int argc, char * const *argv) {
 				}
 			}
 			if (opts.is_screen) {
-				fputs("\033P", out);
+				fputs("\033P", tty);
 			}
 			if (write_header) {
-				fputs(seq_start, out);
+				fputs(seq_start, tty);
 				write_header = false;
 			}
 			size_t len = base64_encode(read_buf, read_len, enc_buf, sizeof(enc_buf));
-			if (fwrite(enc_buf, 1, len, out) != len) {
+			if (fwrite(enc_buf, 1, len, tty) != len) {
 				rc = ERR_IO;
 				break;
 			}
 			if (opts.is_screen) {
-				fputs("\033\\", out);
+				fputs("\033\\", tty);
 			}
 		}
-		fputs(seq_end, out);
-		fflush(out);
+		fputs(seq_end, tty);
+		fflush(tty);
 
 		if (ferror(input)) {
 			logerr("/dev/stdin: read error: %s", strerror(errno));
@@ -345,14 +345,14 @@ int main (int argc, char * const *argv) {
 		}
 	}
 
-	if (ferror(out)) {
+	if (ferror(tty)) {
 		logerr("%s: write error: %s", opts.out_file, strerror(errno));
 		rc = ERR_IO;
 	}
 
 done:
-	if (isatty(out_fd)) {
-		tcsetattr(out_fd, TCSANOW, &term_restore);
+	if (isatty(tty_fd)) {
+		tcsetattr(tty_fd, TCSANOW, &term_restore);
 	}
 
 	return rc;
