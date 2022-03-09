@@ -20,6 +20,10 @@
   #define VERSION "0.1.0"
 #endif
 
+#define OP_CLEAR 'c'
+#define OP_TEST 't'
+#define OP_WRITE 'w'
+
 #define ERR_GENERAL 1
 #define ERR_WRONG_USAGE 10
 #define ERR_IO 11
@@ -58,14 +62,13 @@ static const char * const help_msg =
 
 // CLI options
 static struct {
-	bool clear;
+	char op;
 	bool is_screen;
 	bool is_tmux;
 	bool primary;
-	bool test;
 	bool trim_newline;
 	char *tty_path;
-} opts;
+} opts = {0};
 
 /**
  * Returns true if the given string `str` starts with the `prefix`.
@@ -106,7 +109,7 @@ static void parse_opts (int argc, char * const *argv) {
 		}
 		switch (optch) {
 			case 'c':
-				opts.clear = true;
+				opts.op = OP_CLEAR;
 				break;
 			case 'n':
 				opts.trim_newline = true;
@@ -121,7 +124,7 @@ static void parse_opts (int argc, char * const *argv) {
 				term_type = strdup(optarg);
 				break;
 			case 't':
-				opts.test = true;
+				opts.op = OP_TEST;
 				break;
 			case 'h':
 				printf("%s", help_msg);
@@ -134,6 +137,9 @@ static void parse_opts (int argc, char * const *argv) {
 		}
 	}
 
+	if (!opts.op) {
+		opts.op = OP_WRITE;
+	}
 	if (opts.tty_path == NULL) {
 		opts.tty_path = _PATH_TTY;
 	}
@@ -296,7 +302,7 @@ int main (int argc, char * const *argv) {
 	}
 
 	int rc = EXIT_SUCCESS;
-	if (opts.test) {
+	if (opts.op == OP_TEST) {
 		fputs("\0337", tty);  // save current terminal state
 
 		int col = get_cursor_column(tty);
@@ -307,7 +313,7 @@ int main (int argc, char * const *argv) {
 			fputs("\0338", tty);  // restore terminal state
 			rc = ERR_GENERAL;
 		}
-	} else if (opts.clear) {
+	} else if (opts.op == OP_CLEAR) {
 		fprintf(tty, "%s!%s", seq_start, seq_end);
 		fflush(tty);
 
