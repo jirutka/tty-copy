@@ -38,7 +38,7 @@ static const char * const help_msg =
 	"Usage:\n"
 	"  " PROGNAME " [options] text to copy\n"
 	"  " PROGNAME " [options] < file-to-copy\n"
-	"  " PROGNAME " (-V | -h)\n"
+	"  " PROGNAME " (-t | -V | -h)\n"
 	"\n"
 	"Copy content to the system clipboard from anywhere via terminal that supports\n"
 	"ANSI OSC 52 sequence.\n"
@@ -50,6 +50,7 @@ static const char * const help_msg =
 	"  -p --primary       Use the \"primary\" clipboard (selection) instead of the\n"
 	"                     regular clipboard.\n"
 	"  -T --term TERM     Type of the terminal: (default), screen, or tmux.\n"
+	"  -t --test          Test if your terminal processes OSC 52 sequence.\n"
 	"  -V --version       Print program name & version and exit.\n"
 	"  -h --help          Display this message and exit.\n"
 	"\n"
@@ -61,6 +62,7 @@ static struct {
 	bool is_screen;
 	bool is_tmux;
 	bool primary;
+	bool test;
 	bool trim_newline;
 	char *tty_path;
 } opts;
@@ -82,12 +84,13 @@ static bool str_equal (const char *str1, const char *str2) {
 static void parse_opts (int argc, char * const *argv) {
 	assert(argc > 0 && "given zero argc");
 
-	const char *short_opts = "cno:pT:hV";
+	const char *short_opts = "cno:pT:thV";
 	static struct option long_opts[] = {
 		{"clear"       , no_argument      , 0, 'c'},
 		{"output"      , required_argument, 0, 'o'},
 		{"primary"     , no_argument      , 0, 'p'},
 		{"term"        , required_argument, 0, 'T'},
+		{"test"        , no_argument      , 0, 't'},
 		{"trim-newline", no_argument      , 0, 'n'},
 		{"help"        , no_argument      , 0, 'h'},
 		{"version"     , no_argument      , 0, 'V'},
@@ -116,6 +119,9 @@ static void parse_opts (int argc, char * const *argv) {
 				break;
 			case 'T':
 				term_type = strdup(optarg);
+				break;
+			case 't':
+				opts.test = true;
 				break;
 			case 'h':
 				printf("%s", help_msg);
@@ -225,6 +231,29 @@ static int fpeek (FILE *stream) {
 }
 
 /**
+ * Returns the cursor position on the X-axis (column), or -1 on error.
+ */
+static int get_cursor_column (FILE *tty) {
+	uchar buf[16] = {'\0'};
+
+	if (fputs("\033[6n", tty) < 0) {
+		return -1;
+	}
+	for (int i = 0, ch = 0; ch != 'R' && i < sizeof(buf) - 1; i++) {
+		if ((ch = fgetc(tty)) < 0) {
+			return -1;
+		}
+		buf[i] = ch;
+	}
+
+	int row = 0, col = 0;
+	if (sscanf(buf, "\033[%d;%dR", &row, &col) != 2) {
+		return -1;
+	}
+	return col;
+}
+
+/**
  * Changes the local modes of the terminal referred to by the open file descriptor `fd`.
  *
  * @param fd An open file descriptor associated with the terminal.
@@ -252,8 +281,8 @@ int main (int argc, char * const *argv) {
 	const char *seq_end = opts.is_tmux ? "\a\033\\" : "\a";
 
 	FILE *tty = NULL;
-	if ((tty = fopen(opts.tty_path, "w")) == NULL) {
-		logerr("Failed to open %s for writing: %s", opts.tty_path, strerror(errno));
+	if ((tty = fopen(opts.tty_path, "r+")) == NULL) {
+		logerr("Failed to open %s: %s", opts.tty_path, strerror(errno));
 		exit(ERR_IO);
 	}
 	int tty_fd = fileno(tty);
@@ -267,7 +296,18 @@ int main (int argc, char * const *argv) {
 	}
 
 	int rc = EXIT_SUCCESS;
-	if (opts.clear) {
+	if (opts.test) {
+		fputs("\0337", tty);  // save current terminal state
+
+		int col = get_cursor_column(tty);
+		fprintf(tty, "%s%s", seq_start, seq_end);
+		int col2 = get_cursor_column(tty);
+
+		if (col < 0 || col2 < 0 || col != col2) {
+			fputs("\0338", tty);  // restore terminal state
+			rc = ERR_GENERAL;
+		}
+	} else if (opts.clear) {
 		fprintf(tty, "%s!%s", seq_start, seq_end);
 		fflush(tty);
 

@@ -48,6 +48,12 @@ Currently, only `"screen"` and `"tmux"` are recognized, any other value is inter
 +
 If not specified, `"screen"` and `"tmux"` are autodetected based on the `TERM` and `TMUX` environment variables.
 
+*-t*, *--test*::
+Test whether your terminal processes the OSC 52 escape sequence -- if it does, exits with status code `0`, otherwise with `1`.
++
+The fact that the terminal processes the sequence does not necessarily mean that access to the system clipboard will work -- it may be disabled.
+This option only tests if the sequence is intercepted by the terminal or visibly printed on the screen.
+
 *-V*, *--version*::
 Display the version of *tty-copy* and exit.
 
