@@ -16,7 +16,7 @@ Refer to link:tty-copy.1.adoc[tty-copy(1)] for usage information.
 
 == Supported Terminals
 
-Here is a non-exhaustive list of the status of popular terminal emulators regarding OSC52 (as of May 2021)footnote:[This list was copied from https://github.com/ojroques/vim-oscyank[vim-oscyank].]:
+Here is a non-exhaustive list of the status of popular terminal emulators regarding OSC52 footnote:[This list was originally copied from https://github.com/ojroques/vim-oscyank[vim-oscyank].]:
 
 |===
 | Terminal | OSC 52 support
