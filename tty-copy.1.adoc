@@ -37,7 +37,7 @@ Instead of copying anything, clear the clipboard so that nothing is copied.
 Do not copy the trailing newline character.
 
 *-o* <__file__>, *--output* <__file__>::
-Write the OSC sequence to __file__ instead of `/dev/tty`.
+Path of the terminal device (defaults to `/dev/tty`).
 
 *-p*, *--primary*::
 Use the "`primary`" clipboard (selection) instead of the regular clipboard.

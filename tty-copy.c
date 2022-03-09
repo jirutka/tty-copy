@@ -46,7 +46,7 @@ static const char * const help_msg =
 	"Options:\n"
 	"  -c --clear         Instead of copying anything, clear the clipboard.\n"
 	"  -n --trim-newline  Do not copy the trailing newline character.\n"
-	"  -o --output FILE   Write to FILE instead of /dev/tty.\n"
+	"  -o --output FILE   Path of the terminal device (defaults to /dev/tty).\n"
 	"  -p --primary       Use the \"primary\" clipboard (selection) instead of the\n"
 	"                     regular clipboard.\n"
 	"  -T --term TERM     Type of the terminal: (default), screen, or tmux.\n"
@@ -60,9 +60,9 @@ static struct {
 	bool clear;
 	bool is_screen;
 	bool is_tmux;
-	char *out_file;
 	bool primary;
 	bool trim_newline;
+	char *tty_path;
 } opts;
 
 /**
@@ -109,7 +109,7 @@ static void parse_opts (int argc, char * const *argv) {
 				opts.trim_newline = true;
 				break;
 			case 'o':
-				opts.out_file = strdup(optarg);
+				opts.tty_path = strdup(optarg);
 				break;
 			case 'p':
 				opts.primary = true;
@@ -128,8 +128,8 @@ static void parse_opts (int argc, char * const *argv) {
 		}
 	}
 
-	if (opts.out_file == NULL) {
-		opts.out_file = _PATH_TTY;
+	if (opts.tty_path == NULL) {
+		opts.tty_path = _PATH_TTY;
 	}
 
 	const char *term = NULL;
@@ -252,8 +252,8 @@ int main (int argc, char * const *argv) {
 	const char *seq_end = opts.is_tmux ? "\a\033\\" : "\a";
 
 	FILE *tty = NULL;
-	if ((tty = fopen(opts.out_file, "w")) == NULL) {
-		logerr("Failed to open %s for writing: %s", opts.out_file, strerror(errno));
+	if ((tty = fopen(opts.tty_path, "w")) == NULL) {
+		logerr("Failed to open %s for writing: %s", opts.tty_path, strerror(errno));
 		exit(ERR_IO);
 	}
 	int tty_fd = fileno(tty);
@@ -346,7 +346,7 @@ int main (int argc, char * const *argv) {
 	}
 
 	if (ferror(tty)) {
-		logerr("%s: write error: %s", opts.out_file, strerror(errno));
+		logerr("%s: write error: %s", opts.tty_path, strerror(errno));
 		rc = ERR_IO;
 	}
 
