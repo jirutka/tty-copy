@@ -74,7 +74,7 @@ Here is a non-exhaustive list of the status of popular terminal emulators regard
 
 === On Alpine Linux
 
-Install package {proj-name} from the Alpine’s Edge community repository:
+Install package https://pkgs.alpinelinux.org/packages?name={proj-name}[{proj-name}] from the Alpine’s Edge community repository:
 
 [source, sh, subs="+attributes"]
 apk add {proj-name}
