@@ -92,11 +92,14 @@ Or use another AUR helper.
 
 === Using Pre-Built Binary
 
+🐧 *Linux*:
 {releases-uri}/{proj-name}.x86_64-linux[[x86_64]]
 {releases-uri}/{proj-name}.aarch64-linux[[aarch64]]
 {releases-uri}/{proj-name}.armv7-linux[[armv7]]
 {releases-uri}/{proj-name}.ppc64le-linux[[ppc64le]]
-{releases-uri}/{proj-name}.riscv64-linux[[riscv64]]
+{releases-uri}/{proj-name}.riscv64-linux[[riscv64]] +
+ *macOS*:
+{releases-uri}/{proj-name}.x86_64-darwin[[x86_64]]
 
 . Download and verify {proj-name} binary for your CPU architecture (pick the right link from the list above), for example:
 +
