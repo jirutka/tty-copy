@@ -90,6 +90,44 @@ jobs:
           path: dist/*
           if-no-files-found: error
 
+  build-macos:
+    name: Build on macOS x86_64
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 0  # fetch all history
+
+      - name: Install dependencies
+        run: brew install asciidoctor
+
+      - name: Get version
+        run: |
+          GIT_TAG=$(git describe --tags --match 'v*' 2>/dev/null || echo ${GITHUB_REF##*/})
+          echo "VERSION=${GIT_TAG#v}" >> $GITHUB_ENV
+
+      - name: Build tty-copy
+        run: |
+          make build VERSION="${{ env.VERSION }}"
+          ls -lah build/
+          file build/tty-copy
+
+      - name: tty-copy -V
+        run: ./build/tty-copy -V
+
+      - name: Rename binary before upload
+        run: |
+          mkdir dist
+          cp -a build/tty-copy dist/tty-copy.x86_64-darwin
+
+      - name: Upload binary to artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: binaries
+          path: dist/*
+          if-no-files-found: error
+
   publish:
     name: Publish binaries to Releases
     if: ${{ startsWith(github.ref, 'refs/tags/v') && github.event_name != 'pull_request' }}
