@@ -65,7 +65,7 @@ install-exec: build-exec
 
 #: Install man page into $DESTDIR/$mandir/man1/.
 install-man: build-man
-	$(INSTALL) -D -m755 $(D)/$(BIN_NAME) "$(DESTDIR)$(mandir)/man1/$(BIN_NAME).1"
+	$(INSTALL) -D -m755 $(D)/$(BIN_NAME).1 "$(DESTDIR)$(mandir)/man1/$(BIN_NAME).1"
 
 #: Uninstall from $DESTDIR.
 uninstall:
