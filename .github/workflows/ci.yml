@@ -116,6 +116,8 @@ jobs:
       - name: tty-copy -V
         run: ./build/tty-copy -V
 
+      - run: make install DESTDIR=dest
+
       - name: Rename binary before upload
         run: |
           mkdir dist
