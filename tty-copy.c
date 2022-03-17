@@ -240,7 +240,7 @@ static int fpeek (FILE *stream) {
  * Returns the cursor position on the X-axis (column), or -1 on error.
  */
 static int get_cursor_column (FILE *tty) {
-	uchar buf[16] = {'\0'};
+	char buf[16] = {'\0'};
 
 	if (fputs("\033[6n", tty) < 0) {
 		return -1;
