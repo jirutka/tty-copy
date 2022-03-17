@@ -61,11 +61,13 @@ install: install-exec install-man
 
 #: Install executable into $DESTDIR/$bindir/.
 install-exec: build-exec
-	$(INSTALL) -D -m755 $(D)/$(BIN_NAME) "$(DESTDIR)$(bindir)/$(BIN_NAME)"
+	$(INSTALL) -d "$(DESTDIR)$(bindir)"
+	$(INSTALL) -m755 $(D)/$(BIN_NAME) "$(DESTDIR)$(bindir)/$(BIN_NAME)"
 
 #: Install man page into $DESTDIR/$mandir/man1/.
 install-man: build-man
-	$(INSTALL) -D -m755 $(D)/$(BIN_NAME).1 "$(DESTDIR)$(mandir)/man1/$(BIN_NAME).1"
+	$(INSTALL) -d "$(DESTDIR)$(mandir)/man1"
+	$(INSTALL) -m755 $(D)/$(BIN_NAME).1 "$(DESTDIR)$(mandir)/man1/$(BIN_NAME).1"
 
 #: Uninstall from $DESTDIR.
 uninstall:
