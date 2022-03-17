@@ -128,6 +128,39 @@ jobs:
           path: dist/*
           if-no-files-found: error
 
+  build-win32:
+    name: Build on Windows x86_64
+    runs-on: windows-latest
+    steps:
+      - name: Setup MSYS2 and install packages
+        uses: msys2/setup-msys2@v2
+        with:
+          update: false
+          install: base-devel mingw-w64-x86_64-toolchain
+
+      - name: Checkout repository
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 0  # fetch all history
+
+      - name: Get version
+        shell: msys2 {0}
+        run: |
+          GIT_TAG=$(git describe --tags --match 'v*' 2>/dev/null || echo ${GITHUB_REF##*/})
+          echo "VERSION=${GIT_TAG#v}" >> $GITHUB_ENV
+
+      - name: Build tty-copy
+        shell: msys2 {0}
+        run: |
+          make build VERSION="${{ env.VERSION }}"
+          ls -lah build/
+          file build/tty-copy
+
+      - name: Upload nginx binary to artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          path: artifact/*
+
   publish:
     name: Publish binaries to Releases
     if: ${{ startsWith(github.ref, 'refs/tags/v') && github.event_name != 'pull_request' }}
