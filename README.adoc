@@ -24,6 +24,9 @@ Here is a non-exhaustive list of the status of popular terminal emulators regard
 | https://github.com/alacritty/alacritty[Alacritty]
 | *yes*
 
+| https://github.com/contour-terminal/contour[Contour]
+| *yes*
+
 | https://codeberg.org/dnkl/foot[foot]
 | *yes*
 
