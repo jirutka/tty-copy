@@ -1,6 +1,6 @@
 = tty-copy
 :proj-name: tty-copy
-:version: 0.2.1
+:version: 0.2.2
 :gh-name: jirutka/{proj-name}
 :releases-uri: https://github.com/{gh-name}/releases/download/v{version}
 
