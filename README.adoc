@@ -93,6 +93,14 @@ yay -S {proj-name}
 Or use another AUR helper.
 
 
+=== On Fedora
+
+Install package https://packages.fedoraproject.org/pkgs/{proj-name}/{proj-name}/[{proj-name}] from the Fedora repositories (since Fedora 35):
+
+[source, sh, subs="+attributes"]
+dnf install {proj-name}
+
+
 === Using Pre-Built Binary
 
 🐧 *Linux*:
