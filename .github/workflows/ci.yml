@@ -47,19 +47,12 @@ jobs:
         with:
           fetch-depth: 0  # fetch all history
 
-      - name: Download alpine-chroot-install
-        run: |
-          wget https://raw.githubusercontent.com/alpinelinux/alpine-chroot-install/v0.13.3/alpine-chroot-install
-          echo 'c3005e323029637db20ec9595243ac94bb9b2226  alpine-chroot-install' | sha1sum -c
-          chmod +x alpine-chroot-install
-
       - name: Install latest Alpine Linux for ${{ matrix.ARCH }}
-        run: |
-          sudo ./alpine-chroot-install \
-            -a ${{ matrix.ARCH }} \
-            -b ${{ matrix.ARCH == 'riscv64' && 'edge' || 'latest-stable' }} \
-            -p 'asciidoctor build-base'
-          /alpine/enter-chroot uname -a
+        uses: jirutka/setup-alpine@v1
+        with:
+          arch: ${{ matrix.ARCH }}
+          branch: ${{ matrix.ARCH == 'riscv64' && 'edge' || 'latest-stable' }}
+          packages: asciidoctor build-base
 
       - name: Get version
         run: |
@@ -68,13 +61,14 @@ jobs:
 
       - name: Build tty-copy
         run: |
-          /alpine/enter-chroot -u $USER \
-              make build CC=${{ matrix.CC }} LDFLAGS="${{ matrix.LDFLAGS }}" VERSION="${{ env.VERSION }}"
+          make build CC=${{ matrix.CC }} LDFLAGS="${{ matrix.LDFLAGS }}" VERSION="${{ env.VERSION }}"
           ls -lah build/
           file build/tty-copy
+        shell: alpine.sh {0}
 
       - name: tty-copy -V
-        run: /alpine/enter-chroot -u $USER ./build/tty-copy -V
+        run: ./build/tty-copy -V
+        shell: alpine.sh {0}
 
       - name: Rename binary before upload
         if: ${{ matrix.LDFLAGS != '' }}
