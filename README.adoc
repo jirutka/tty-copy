@@ -43,6 +43,9 @@ Here is a non-exhaustive list of the status of popular terminal emulators regard
 | https://konsole.kde.org[Konsole]
 | https://bugs.kde.org/show_bug.cgi?id=372116[not yet]
 
+| https://github.com/lxqt/qterminal[QTerminal]
+| https://github.com/lxqt/qterminal/issues/839[not yet]
+
 | http://rxvt.sourceforge.net/[rxvt]
 | *yes* (to be confirmed)
 
