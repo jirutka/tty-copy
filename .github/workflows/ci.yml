@@ -14,7 +14,7 @@ jobs:
           - clang
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v1
+        uses: actions/checkout@v4
 
       - name: Install build dependencies
         run: sudo apt-get install asciidoctor
@@ -43,7 +43,7 @@ jobs:
           - -static -s
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v1
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0  # fetch all history
 
@@ -78,9 +78,9 @@ jobs:
 
       - name: Upload binary to artifacts
         if: ${{ matrix.LDFLAGS != '' }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
-          name: binaries
+          name: "${{ matrix.ARCH }}-linux"
           path: dist/*
           if-no-files-found: error
 
@@ -89,7 +89,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v1
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0  # fetch all history
 
@@ -118,9 +118,9 @@ jobs:
           cp -a build/tty-copy dist/tty-copy.x86_64-darwin
 
       - name: Upload binary to artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
-          name: binaries
+          name: x86_64-darwin
           path: dist/*
           if-no-files-found: error
 
@@ -133,7 +133,10 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Download binaries from artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
 
       - name: Generate checksums.txt
         run:
