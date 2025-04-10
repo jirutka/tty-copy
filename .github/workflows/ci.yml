@@ -85,8 +85,13 @@ jobs:
           if-no-files-found: error
 
   build-macos:
-    name: Build on macOS x86_64
+    name: Build on macOS ARM
     runs-on: macos-latest
+    strategy:
+      matrix:
+        ARCH:
+          - x86_64
+          - arm64
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -101,9 +106,9 @@ jobs:
           GIT_TAG=$(git describe --tags --match 'v*' 2>/dev/null || echo ${GITHUB_REF##*/})
           echo "VERSION=${GIT_TAG#v}" >> $GITHUB_ENV
 
-      - name: Build tty-copy
+      - name: Build tty-copy for ${{ matrix.ARCH }}
         run: |
-          make build VERSION="${{ env.VERSION }}"
+          arch -arch ${{ matrix.ARCH }} make build VERSION="${{ env.VERSION }}"
           ls -lah build/
           file build/tty-copy
 
@@ -115,12 +120,12 @@ jobs:
       - name: Rename binary before upload
         run: |
           mkdir dist
-          cp -a build/tty-copy dist/tty-copy.x86_64-darwin
+          cp -a build/tty-copy dist/tty-copy.${{ matrix.ARCH }}-darwin
 
       - name: Upload binary to artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: x86_64-darwin
+          name: ${{ matrix.ARCH }}-darwin
           path: dist/*
           if-no-files-found: error
 
@@ -141,11 +146,11 @@ jobs:
       - name: Generate checksums.txt
         run:
           shasum -a 256 * > checksums.txt
-        working-directory: binaries
+        working-directory: dist
 
       - name: Upload binaries to Releases
         uses: softprops/action-gh-release@v1
         with:
-          files: binaries/*
+          files: dist/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
